@@ -1,75 +1,115 @@
-# Structure des données des pays extraite du HTML
-COUNTRIES_DATA = {
-    "Afrique": {
-        "Afrique du Nord": {
-            "Algérie": {
-                "risk": "6/10",
-                "indicators": [
-                    "Autoritarisme",
-                    "Crise économique",
-                    "Chômage jeunes"
-                ],
-                "timeline": [
-                    {"year": "1954-1962", "event": "Guerre d'indépendance", "severity": "high"},
-                    {"year": "1991-2002", "event": "Guerre civile", "severity": "high"},
-                    {"year": "2019-2021", "event": "Hirak (mouvement de contestation)", "severity": "medium"},
-                    {"year": "2024-2025", "event": "Manifestations contre l'austérité", "severity": "medium"}
-                ]
-            },
-            "Égypte": {
-                "risk": "8/10",
-                "indicators": [
-                    "Autoritarisme",
-                    "Crise économique",
-                    "Répression"
-                ],
-                "timeline": [
-                    {"year": "1952", "event": "Coup d'État militaire", "severity": "high"},
-                    {"year": "2011", "event": "Révolution égyptienne", "severity": "high"},
-                    {"year": "2013", "event": "Coup d'État de Sissi", "severity": "high"},
-                    {"year": "2024-2025", "event": "Crise économique et pénuries alimentaires", "severity": "high"}
-                ]
-            },
-            # Ajouter d'autres pays d'Afrique du Nord...
-        },
-        "Afrique de l'Ouest": {
-            "Burkina Faso": {
-                "risk": "10/10",
-                "indicators": [
-                    "Jihadisme",
-                    "Coups d'État",
-                    "Pauvreté"
-                ],
-                "timeline": [
-                    {"year": "2014", "event": "Soulèvement populaire", "severity": "high"},
-                    {"year": "2022", "event": "Premier coup d'État", "severity": "high"},
-                    {"year": "2023", "event": "Deuxième coup d'État", "severity": "high"},
-                    {"year": "2024-2025", "event": "Escalade des attaques jihadistes", "severity": "high"}
-                ]
-            },
-            # Ajouter d'autres pays d'Afrique de l'Ouest...
-        },
-        # Ajouter d'autres régions d'Afrique...
+```python
+SCENARIOS_DATA = [
+    {
+        "name": "Triade Autoritaire",
+        "probability": 92,
+        "factors": "Président >10 ans + Corruption + Répression",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Égypte (2013), Zimbabwe (2017)"
     },
-    "Amériques": {
-        "Amérique du Nord": {
-            "USA": {
-                "risk": "8/10",
-                "indicators": [
-                    "Polarisation politique",
-                    "Violence politique",
-                    "Inégalités"
-                ],
-                "timeline": [
-                    {"year": "1954-1968", "event": "Mouvement des droits civiques", "severity": "medium"},
-                    {"year": "1992", "event": "Émeutes de Los Angeles", "severity": "medium"},
-                    {"year": "2021", "event": "Assaut du Capitole", "severity": "high"},
-                    {"year": "2024-2025", "event": "Violences politiques autour des élections", "severity": "high"}
-                ]
-            },
-            # Ajouter d'autres pays d'Amérique du Nord...
-        },
-        # Ajouter d'autres régions des Amériques...
+    {
+        "name": "Crise Économique",
+        "probability": 87,
+        "factors": "Inflation >50% + Chômeurs jeunes >30%",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Venezuela (2014-2019), Tunisie (2011)"
     },
-    # Ajouter d'autres continents...
-}
+    {
+        "name": "Fragmentation Ethnique",
+        "probability": 78,
+        "factors": "Conflits ethniques + Inégalités",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Rwanda (1994), Yougoslavie (1990s)"
+    },
+    {
+        "name": "Insécurité Multiforme",
+        "probability": 82,
+        "factors": "Terrorisme + Criminalité organisée",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Somalie (1991-), Mexique (2006-)"
+    },
+    {
+        "name": "Crise Environnementale",
+        "probability": 65,
+        "factors": "Sécheresse + Pénuries d'eau",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Syrie (2011-), Yémen (2015-)"
+    },
+    {
+        "name": "Ingérence Étrangère",
+        "probability": 75,
+        "factors": "Troupes étrangères + Soutien à groupes armés",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Afghanistan (2001-2021), Ukraine (2014-)"
+    },
+    {
+        "name": "Transition Démocratique",
+        "probability": 70,
+        "factors": "Institutions faibles + Corruption",
+        "event": "Soulèvement populaire ou coup d'État militaire",
+        "examples": "Exemples historiques: Tunisie (2011), Burkina Faso (2014)"
+    }
+]
+
+CRITICAL_INDICATORS = [
+    "Corruption >60/100 (Transparency International)",
+    "Pauvreté >40%",
+    "Présence de groupes armés actifs",
+    "Président au pouvoir >10 ans",
+    "Dépendance aux ressources >50% des exportations",
+    "Chômage jeunes >25%",
+    "Inflation >30%",
+    "Conflits ethniques/religieux historiques",
+    "Ingérence étrangère significative",
+    "Stress hydrique >40%"
+]
+```
+
+**Option B: Update Imports in `PredGeoapp.py`**
+- If you prefer to keep `datacountries_data.py` and define `scenarios_data` inline or elsewhere, update the imports in `PredGeoapp.py` to match the file structure. For example, if you keep `datacountries_data.py` and add `scenarios_data.py`:
+
+  ```python
+  from data.datacountries_data import COUNTRIES_DATA
+  from data.scenarios_data import SCENARIOS_DATA, CRITICAL_INDICATORS
+  ```
+
+**Recommended Action**: Go with **Option A** by renaming `datacountries_data.py` to `data/countries_data.py` and creating `data/scenarios_data.py` to align with the imports already in `PredGeoapp.py`. This minimizes changes to the main script.
+
+#### 4. Update GitHub Actions Workflow
+Your `.github_workflows_deploy.yml` specifies Python 3.10, but Streamlit Cloud is using Python 3.13.6, which caused the `distutils` issue with `numpy==1.24.3`. Update the workflow to use Python 3.13 to match the Streamlit Cloud environment, and add a step to upgrade pip.
+
+Here’s the updated `.github/workflows/deploy.yml`:
+
+<xaiArtifact artifact_id="f0dc830b-bc97-4d03-a306-a0b6ea3caac1" artifact_version_id="64470600-f183-4652-b311-445e064a9f2d" title="deploy.yml" contentType="text/yaml">
+```yaml
+name: Deploy to Streamlit Cloud
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Deploy to Streamlit Cloud
+      uses: streamlit/streamlit-app-action@v0.0.1
+      with:
+        app-name: geopolitical-predictor
+        app-file: PredGeoapp.py
+        app-dir: .
+```
