@@ -7,21 +7,6 @@ import sys
 import importlib
 import streamlit as st
 
-def install_and_import(package_name):
-    """Installe un package s'il n'est pas disponible et l'importe"""
-    try:
-        return importlib.import_module(package_name)
-    except ImportError:
-        print(f"Installation de {package_name}...")
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
-        return importlib.import_module(package_name)
-
-# Installer et importer les dépendances nécessaires
-px = install_and_import("plotly.express")
-go = install_and_import("plotly.graph_objects")
-pd = install_and_import("pandas")
-np = install_and_import("numpy")
-
 # Configuration de la page
 st.set_page_config(
     page_title="Analyse Géopolitique Mondiale",
@@ -247,6 +232,7 @@ with col3:
     st.markdown("- **Aide humanitaire**: Coordination internationale")
     st.markdown("- **Reconstruction**: Plans post-conflit")
     st.markdown("- **Prévention des récurrences**: Désarmement")
+
 
 
 
