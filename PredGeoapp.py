@@ -232,4 +232,5 @@ def main():
             st.markdown(f"- {rec}")
 
 if __name__ == "__main__":
+
     main()
