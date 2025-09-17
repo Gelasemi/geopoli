@@ -15,6 +15,7 @@ px = install_and_import("plotly.express")
 go = install_and_import("plotly.graph_objects")
 pd = install_and_import("pandas")
 np = install_and_import("numpy")
+
 import subprocess
 import sys
 import importlib
@@ -260,4 +261,5 @@ with col3:
     st.markdown("- **Aide humanitaire**: Coordination internationale")
     st.markdown("- **Reconstruction**: Plans post-conflit")
     st.markdown("- **Prévention des récurrences**: Désarmement")
+
 
