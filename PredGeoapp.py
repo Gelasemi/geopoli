@@ -1,11 +1,22 @@
+import subprocess
+import sys
+import importlib
 import streamlit as st
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from data.countries_data import COUNTRIES_DATA
-from data.scenarios_data import SCENARIOS_DATA, CRITICAL_INDICATORS
-from utils.predictor import predict_conflict_probability
-from utils.visualizations import create_risk_gauge, create_timeline_chart
+
+def install_and_import(package_name):
+    """Installe un package s'il n'est pas disponible et l'importe"""
+    try:
+        return importlib.import_module(package_name)
+    except ImportError:
+        print(f"Installation de {package_name}...")
+        subprocess.check_call([sys.executable, "-m", "pip", "install", package_name])
+        return importlib.import_module(package_name)
+
+# Installer et importer les dépendances nécessaires
+px = install_and_import("plotly.express")
+go = install_and_import("plotly.graph_objects")
+pd = install_and_import("pandas")
+np = install_and_import("numpy")
 
 # Configuration de la page
 st.set_page_config(
@@ -15,222 +26,220 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# CSS personnalisé
+# En-tête avec profil
 st.markdown("""
-<style>
-    .profile-header {
-        background-color: #f8f9fa;
-        padding: 20px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    }
-    .profile-image {
-        border-radius: 50%;
-        border: 3px solid #dee2e6;
-    }
-    .risk-badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 15px;
-        color: white;
-        font-weight: bold;
-        font-size: 0.8rem;
-    }
-    .timeline-item {
-        margin-bottom: 10px;
-        padding-left: 20px;
-        border-left: 2px solid #dee2e6;
-    }
-    .scenario-card {
-        border-left: 5px solid;
-        padding: 15px;
-        margin-bottom: 15px;
-        border-radius: 5px;
-    }
-    .scenario-high { border-left-color: #d32f2f; background-color: rgba(211, 47, 47, 0.1); }
-    .scenario-medium { border-left-color: #ff9800; background-color: rgba(255, 152, 0, 0.1); }
-    .scenario-low { border-left-color: #8bc34a; background-color: rgba(139, 195, 74, 0.1); }
-</style>
+<div style="background-color: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.05);">
+    <div style="display: flex; align-items: center;">
+        <img src="https://via.placeholder.com/120" style="border-radius: 50%; border: 3px solid #dee2e6; margin-right: 20px;" width="120">
+        <div>
+            <h1 style="margin-bottom: 5px;">Prince Manantenasoa Dauphin Gelase Michelot</h1>
+            <p style="margin-bottom: 0; color: #6c757d; font-style: italic;">Membre de la communauté royale de Madagascar</p>
+            <p style="margin-bottom: 0;">Expert en géopolitique et relations internationales</p>
+        </div>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
-# En-tête avec profil
-def display_profile():
-    st.markdown("""
-    <div class="profile-header">
-        <div style="display: flex; align-items: center;">
-            <img src="https://via.placeholder.com/120" class="profile-image" width="120" style="margin-right: 20px;">
-            <div>
-                <h1 style="margin-bottom: 5px;">Prince Manantenasoa Dauphin Gelase Michelot</h1>
-                <p style="margin-bottom: 0; color: #6c757d; font-style: italic;">Membre de la communauté royale de Madagascar</p>
-                <p style="margin-bottom: 0;">Expert en géopolitique et relations internationales</p>
-            </div>
-        </div>
+st.title("Analyse Géopolitique Mondiale Complète")
+st.markdown("### Cartographie des risques, conflits et soulèvements par pays, région et continent")
+
+# Données des pays (exemple simplifié)
+countries_data = {
+    "Afrique": {
+        "Afrique du Nord": {
+            "Algérie": {"risk": "6/10", "indicators": ["Autoritarisme", "Crise économique"]},
+            "Égypte": {"risk": "8/10", "indicators": ["Autoritarisme", "Répression"]},
+            "Libye": {"risk": "10/10", "indicators": ["Effondrement de l'État", "Guerre civile"]},
+            "Maroc": {"risk": "4/10", "indicators": ["Autoritarisme", "Inégalités"]},
+            "Tunisie": {"risk": "7/10", "indicators": ["Crise économique", "Instabilité"]},
+            "Soudan": {"risk": "10/10", "indicators": ["Guerre civile", "Répression"]}
+        },
+        "Afrique de l'Ouest": {
+            "Burkina Faso": {"risk": "10/10", "indicators": ["Jihadisme", "Coups d'État"]},
+            "Mali": {"risk": "10/10", "indicators": ["Jihadisme", "Coups d'État"]},
+            "Niger": {"risk": "10/10", "indicators": ["Coup d'État", "Insécurité"]},
+            "Nigeria": {"risk": "9/10", "indicators": ["Terrorisme", "Conflits ethniques"]},
+            "Côte d'Ivoire": {"risk": "5/10", "indicators": ["Tensions politiques", "Inégalités"]}
+        }
+    },
+    "Amériques": {
+        "Amérique du Nord": {
+            "USA": {"risk": "8/10", "indicators": ["Polarisation politique", "Violence politique"]},
+            "Canada": {"risk": "2/10", "indicators": ["Tensions identitaires"]},
+            "Mexique": {"risk": "9/10", "indicators": ["Criminalité organisée", "Corruption"]}
+        }
+    },
+    "Asie": {
+        "Asie de l'Est": {
+            "Chine": {"risk": "7/10", "indicators": ["Autoritarisme", "Tensions ethniques"]},
+            "Corée du Nord": {"risk": "9/10", "indicators": ["Dictature totalitaire", "Nucléaire"]},
+            "Japon": {"risk": "3/10", "indicators": ["Vieillissement démographique"]},
+            "Taïwan": {"risk": "9/10", "indicators": ["Menace d'invasion chinoise"]}
+        }
+    },
+    "Europe": {
+        "Europe de l'Est": {
+            "Ukraine": {"risk": "10/10", "indicators": ["Invasion russe", "Guerre"]},
+            "Russie": {"risk": "9/10", "indicators": ["Autoritarisme", "Guerre en Ukraine"]},
+            "Biélorussie": {"risk": "8/10", "indicators": ["Autoritarisme", "Dépendance russe"]}
+        }
+    },
+    "Océanie": {
+        "Australasie": {
+            "Australie": {"risk": "2/10", "indicators": ["Tensions raciales"]},
+            "Nouvelle-Zélande": {"risk": "1/10", "indicators": ["Stabilité relative"]}
+        }
+    }
+}
+
+# Scénarios de prédiction
+scenarios_data = [
+    {"name": "Triade Autoritaire", "probability": 92, "factors": "Président >10 ans + Corruption + Répression"},
+    {"name": "Crise Économique", "probability": 87, "factors": "Inflation >50% + Chômage jeunes >30%"},
+    {"name": "Fragmentation Ethnique", "probability": 78, "factors": "Conflits ethniques + Inégalités"},
+    {"name": "Insécurité Multiforme", "probability": 82, "factors": "Terrorisme + Criminalité organisée"},
+    {"name": "Crise Environnementale", "probability": 65, "factors": "Sécheresse + Pénuries d'eau"},
+    {"name": "Ingérence Étrangère", "probability": 75, "factors": "Troupes étrangères + Soutien à groupes armés"},
+    {"name": "Transition Démocratique", "probability": 70, "factors": "Institutions faibles + Corruption"}
+]
+
+# Fonction pour calculer la probabilité de conflit
+def predict_conflict_probability(indicators):
+    critical_indicators = [
+        "Corruption", "Autoritarisme", "Répression", "Guerre civile", "Terrorisme",
+        "Pauvreté", "Inégalités", "Instabilité", "Effondrement de l'État",
+        "Violence politique", "Criminalité organisée", "Coups d'État",
+        "Tensions ethniques", "Conflits religieux", "Crise économique",
+        "Chômage jeunes", "Inflation", "Dépendance aux ressources",
+        "Stress hydrique", "Changement climatique"
+    ]
+    
+    score = sum(1 for indicator in indicators if any(critical in indicator for critical in critical_indicators))
+    max_score = len(indicators)
+    probability = min(100, int((score / max_score) * 100))
+    
+    return probability
+
+# Interface utilisateur
+st.header("Modèle de Prédiction des Conflits")
+
+# Sélection du continent
+continent = st.selectbox("Sélectionner un continent", list(countries_data.keys()))
+
+# Sélection de la région
+region = st.selectbox("Sélectionner une région", list(countries_data[continent].keys()))
+
+# Sélection du pays
+country = st.selectbox("Sélectionner un pays", list(countries_data[continent][region].keys()))
+
+# Afficher les détails du pays
+country_data = countries_data[continent][region][country]
+
+col1, col2 = st.columns([1, 3])
+
+with col1:
+    # Jauge de risque
+    risk_value = int(country_data["risk"].split("/")[0])
+    
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=risk_value,
+        domain={'x': [0, 1], 'y': [0, 1]},
+        title={'text': "Risque Actuel"},
+        gauge={
+            'axis': {'range': [None, 10]},
+            'bar': {'color': "darkblue"},
+            'steps': [
+                {'range': [0, 2], 'color': "lightgreen"},
+                {'range': [2, 4], 'color': "green"},
+                {'range': [4, 6], 'color': "yellow"},
+                {'range': [6, 8], 'color': "orange"},
+                {'range': [8, 10], 'color': "red"}
+            ],
+            'threshold': {
+                'line': {'color': "red", 'width': 4},
+                'thickness': 0.75,
+                'value': risk_value
+            }
+        }
+    ))
+    
+    fig.update_layout(height=300, margin=dict(l=20, r=20, t=40, b=20))
+    st.plotly_chart(fig, use_container_width=True)
+    
+    # Badge de risque
+    risk_colors = {
+        0: "#28a745", 1: "#5cb85c", 2: "#8bc34a", 3: "#cddc39", 4: "#ffeb3b",
+        5: "#ffc107", 6: "#ff9800", 7: "#ff5722", 8: "#f44336", 9: "#d32f2f", 10: "#b71c1c"
+    }
+    
+    st.markdown(f"""
+    <div style="text-align: center; margin-top: 20px;">
+        <span style="background-color: {risk_colors[risk_value]}; color: white; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.8rem;">
+            {country_data["risk"]}
+        </span>
     </div>
     """, unsafe_allow_html=True)
 
-# Fonction principale
-def main():
-    display_profile()
+with col2:
+    st.subheader(f"Analyse détaillée: {country}")
     
-    st.title("Analyse Géopolitique Mondiale Complète")
-    st.markdown("### Cartographie des risques, conflits et soulèvements par pays, région et continent")
-    
-    # Sélection du continent
-    continents = list(COUNTRIES_DATA.keys())
-    selected_continent = st.selectbox("Sélectionner un continent", continents)
-    
-    # Sélection de la région
-    regions = list(COUNTRIES_DATA[selected_continent].keys())
-    selected_region = st.selectbox("Sélectionner une région", regions)
-    
-    # Sélection du pays
-    countries = list(COUNTRIES_DATA[selected_continent][selected_region].keys())
-    selected_country = st.selectbox("Sélectionner un pays", countries)
-    
-    # Afficher les détails du pays
-    country_data = COUNTRIES_DATA[selected_continent][selected_region][selected_country]
-    
-    col1, col2 = st.columns([1, 3])
-    
-    with col1:
-        # Jauge de risque
-        risk_value = int(country_data["risk"].split("/")[0])
-        fig = create_risk_gauge(risk_value)
-        st.plotly_chart(fig, use_container_width=True)
-        
-        # Badge de risque
-        risk_color = {
-            0: "#28a745", 1: "#5cb85c", 2: "#8bc34a", 3: "#cddc39", 4: "#ffeb3b",
-            5: "#ffc107", 6: "#ff9800", 7: "#ff5722", 8: "#f44336", 9: "#d32f2f", 10: "#b71c1c"
-        }[risk_value]
-        
-        st.markdown(f"""
-        <div style="text-align: center; margin-top: 20px;">
-            <span class="risk-badge" style="background-color: {risk_color};">
-                {country_data["risk"]}
-            </span>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with col2:
-        st.subheader(f"Analyse détaillée: {selected_country}")
-        
-        # Indicateurs critiques
-        st.markdown("**Indicateurs critiques:**")
-        for indicator in country_data["indicators"]:
-            st.markdown(f"- {indicator}")
-        
-        # Timeline
-        st.markdown("**Chronologie des événements:**")
-        timeline_fig = create_timeline_chart(country_data["timeline"])
-        st.plotly_chart(timeline_fig, use_container_width=True)
-    
-    # Section de prédiction
-    st.markdown("---")
-    st.header("Modèle de Prédiction des Conflits")
+    # Indicateurs critiques
+    st.markdown("**Indicateurs critiques:**")
+    for indicator in country_data["indicators"]:
+        st.markdown(f"- {indicator}")
     
     # Calculer la probabilité de conflit
-    probability = predict_conflict_probability(country_data)
+    probability = predict_conflict_probability(country_data["indicators"])
+    st.metric("Probabilité de conflit", f"{probability}%", delta=None)
+
+# Scénarios de prédiction
+st.markdown("---")
+st.header("Scénarios de Combinaison de Facteurs")
+
+for scenario in scenarios_data:
+    risk_class = "scenario-high" if scenario["probability"] >= 80 else ("scenario-medium" if scenario["probability"] >= 65 else "scenario-low")
+    bg_color = "#d32f2f" if scenario["probability"] >= 80 else ("#ff9800" if scenario["probability"] >= 65 else "#8bc34a")
     
-    col1, col2 = st.columns([1, 2])
-    
-    with col1:
-        st.metric("Probabilité de conflit", f"{probability}%", delta=None)
-        
-        # Échelle de risque
-        st.markdown("**Échelle de risque:**")
-        risk_scale = pd.DataFrame({
-            "Niveau": ["Stabilité", "Tensions", "Pré-crise", "Crise", "Conflit"],
-            "Valeur": [0, 3, 5, 7, 10]
-        })
-        
-        fig_risk_scale = px.bar(
-            risk_scale, 
-            x="Valeur", 
-            y="Niveau", 
-            orientation='h',
-            color="Valeur", 
-            color_continuous_scale=["green", "yellow", "red"],
-            range_color=[0, 10],
-            height=200
-        )
-        fig_risk_scale.update_layout(yaxis={'categoryorder': 'total ascending'})
-        st.plotly_chart(fig_risk_scale, use_container_width=True)
-    
-    with col2:
-        # Indicateurs critiques cochés
-        st.markdown("**Indicateurs critiques présents:**")
-        for indicator in CRITICAL_INDICATORS:
-            checked = indicator in country_data["indicators"]
-            st.checkbox(indicator, value=checked, disabled=True)
-    
-    # Scénarios de prédiction
-    st.markdown("---")
-    st.header("Scénarios de Combinaison de Facteurs")
-    
-    for scenario in SCENARIOS_DATA:
-        risk_class = "scenario-high" if scenario["probability"] >= 80 else ("scenario-medium" if scenario["probability"] >= 65 else "scenario-low")
-        
-        st.markdown(f"""
-        <div class="{risk_class}">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h5>{scenario['name']}</h5>
-                <span class="risk-badge" style="background-color: {'#d32f2f' if scenario['probability'] >= 80 else '#ff9800' if scenario['probability'] >= 65 else '#8bc34a'};">
-                    {scenario['probability']}%
-                </span>
-            </div>
-            <p><strong>Facteurs:</strong> {scenario['factors']}</p>
-            <p><strong>Événement probable:</strong> {scenario['event']}</p>
-            <p><strong>Exemples historiques:</strong> {scenario['examples']}</p>
+    st.markdown(f"""
+    <div style="border-left: 5px solid {bg_color}; padding: 15px; margin-bottom: 15px; border-radius: 5px; background-color: rgba(211, 47, 47, 0.1) if {scenario['probability'] >= 80 else rgba(255, 152, 0, 0.1) if {scenario['probability'] >= 65 else rgba(139, 195, 74, 0.1)}">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h5>{scenario['name']}</h5>
+            <span style="background-color: {bg_color}; color: white; padding: 5px 10px; border-radius: 15px; font-weight: bold; font-size: 0.8rem;">
+                {scenario['probability']}%
+            </span>
         </div>
-        """, unsafe_allow_html=True)
-    
-    # Recommandations
-    st.markdown("---")
-    st.header("Recommandations pour les Dirigeants Politiques")
-    
-    recommendations = {
-        "Prévention": [
-            "Réformes institutionnelles: Limitation des mandats, indépendance judiciaire",
-            "Transparence: Lutte anti-corruption, e-gouvernement",
-            "Inclusion: Intégration des minorités, décentralisation",
-            "Éducation: Programmes pour la jeunesse, réduction des inégalités",
-            "Environnement: Gestion durable des ressources, adaptation climatique"
-        ],
-        "Intervention": [
-            "Dialogue national: Processus inclusif avec toutes les parties",
-            "Médiation internationale: ONU, UA, CEDEAO",
-            "Gouvernance partagée: Gouvernements d'union nationale",
-            "Réformes sécuritaires: Intégration des ex-combattants",
-            "Aide économique: Soutien à la croissance, réduction de la dette"
-        ],
-        "Gestion de Crise": [
-            "Opérations de paix: Mandats robustes de l'ONU",
-            "Justice transitionnelle: CPI, tribunaux nationaux",
-            "Aide humanitaire: Coordination internationale",
-            "Reconstruction: Plans post-conflit, réconciliation",
-            "Prévention des récurrences: Désarmement, réformes structurelles"
-        ]
-    }
-    
-    col1, col2, col3 = st.columns(3)
-    
-    with col1:
-        st.markdown("#### <span style='color:green'>Prévention</span>", unsafe_allow_html=True)
-        for rec in recommendations["Prévention"]:
-            st.markdown(f"- {rec}")
-    
-    with col2:
-        st.markdown("#### <span style='color:orange'>Intervention</span>", unsafe_allow_html=True)
-        for rec in recommendations["Intervention"]:
-            st.markdown(f"- {rec}")
-    
-    with col3:
-        st.markdown("#### <span style='color:red'>Gestion de Crise</span>", unsafe_allow_html=True)
-        for rec in recommendations["Gestion de Crise"]:
-            st.markdown(f"- {rec}")
+        <p><strong>Facteurs:</strong> {scenario['factors']}</p>
+        <p><strong>Événement probable:</strong> Soulèvement populaire ou coup d'État militaire</p>
+    </div>
+    """, unsafe_allow_html=True)
 
-if __name__ == "__main__":
+# Recommandations
+st.markdown("---")
+st.header("Recommandations pour les Dirigeants Politiques")
 
-    main()
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    st.markdown("#### <span style='color:green'>Prévention</span>", unsafe_allow_html=True)
+    st.markdown("- **Réformes institutionnelles**: Limitation des mandats, indépendance judiciaire")
+    st.markdown("- **Transparence**: Lutte anti-corruption, e-gouvernement")
+    st.markdown("- **Inclusion**: Intégration des minorités, décentralisation")
+    st.markdown("- **Éducation**: Programmes pour la jeunesse")
+    st.markdown("- **Environnement**: Gestion durable des ressources")
+
+with col2:
+    st.markdown("#### <span style='color:orange'>Intervention</span>", unsafe_allow_html=True)
+    st.markdown("- **Dialogue national**: Processus inclusif")
+    st.markdown("- **Médiation internationale**: ONU, UA, CEDEAO")
+    st.markdown("- **Gouvernance partagée**: Gouvernements d'union")
+    st.markdown("- **Réformes sécuritaires**: Intégration des ex-combattants")
+    st.markdown("- **Aide économique**: Soutien à la croissance")
+
+with col3:
+    st.markdown("#### <span style='color:red'>Gestion de Crise</span>", unsafe_allow_html=True)
+    st.markdown("- **Opérations de paix**: Mandats robustes de l'ONU")
+    st.markdown("- **Justice transitionnelle**: CPI, tribunaux")
+    st.markdown("- **Aide humanitaire**: Coordination internationale")
+    st.markdown("- **Reconstruction**: Plans post-conflit")
+    st.markdown("- **Prévention des récurrences**: Désarmement")
